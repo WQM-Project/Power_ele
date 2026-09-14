@@ -1,62 +1,30 @@
-# Water Quality Monitoring (WQM) Autonomous Vessel
+# Power Electronics & Propulsion (WQM-Project)
 
-## 1. Project Links
-- Repository: `WQM-Project/Power_ele`
-- Schematic: [`Schematic.pdf`](./Schematic.pdf)
+This repository contains the power and propulsion subsystem designs for the Water Quality Monitoring (WQM) remote-controlled vessel.
 
-## 2. Problem Statement
-Manual water quality testing in lakes and reservoirs is slow, labor-intensive, and limits spatial coverage. Fixed sensor buoys only measure water at a single location, missing localized pollution events or gradient changes across large water bodies.
+## Schematic Overview
 
-## 3. Problem Solution
-An autonomous surface vessel (ASV) navigates water bodies to collect real-time water quality metrics across multiple locations. The vessel uses GPS and LiDAR for navigation, environmental sensors to measure water conditions, and LoRa to transmit data to a base station.
+The design is split across two main pages in [`Schematic.pdf`](./Schematic.pdf):
 
-## 4. System Representation
+### 1. Sensing & Logic (Brief Overview)
 
-### System Overview
-An STM32 Nucleo-F722ZE microcontroller aggregates sensor data, handles navigation, and controls propulsion. It communicates over LoRa for long-range telemetry. Two underwater thrusters provide differential thrust for steering.
+The first page of the schematic covers the main STM32 Nucleo-F722ZE microcontroller, water quality sensors (DO, TDS, pH), environmental sensors (BME280), location tracking (GPS, IMU), and telemetry (Waveshare LoRa). These components run on 5V/3.3V logic and handle the vessel's data collection and transmission. It also includes the FlySky receiver for capturing manual RC steering commands.
 
-### Block Diagram Description
-1. **Sensing Layer:** Analog and digital sensors capture environmental data (pH, DO, TDS, temperature, humidity, pressure) and navigational data (GPS, IMU, LiDAR).
-2. **Processing Layer:** The STM32 Nucleo-F722ZE reads sensor inputs via I2C, UART, SPI, and Analog pins.
-3. **Communication Layer:** A Waveshare Core1262 LoRa module transmits telemetry via SPI. A FlySky receiver takes manual override commands.
-4. **Propulsion Layer:** The STM32 outputs PWM signals to two SimonK 30A ESCs, which drive the underwater thrusters.
-5. **Power System:** A LiFePO4 battery routes through an emergency kill switch to the ESCs and a buck converter. The converter steps the voltage down to 5V to power the MCU and sensors.
+### 2. Power Delivery & Propulsion (Detailed Description)
 
-## 5. Tools, Sensors, and Equipment
+The second page focuses on the high-power routing that drives the vessel.
 
-- **Microcontroller:** STMicroelectronics NUCLEO-F722ZE (ARM Cortex-M7)
-- **Water Quality Sensors:**
-  - Dissolved Oxygen (DO) Sensor Kit (Galvanic, Analog out)
-  - Analog TDS Sensor Module (Analog out)
-  - Industrial Grade Analog pH Sensor Kit (Analog out)
-- **Environmental Sensor:** BME280 (Temperature, Humidity, Pressure via I2C)
-- **Navigation & Telemetry:**
-  - 9-Axis IMU MPU-9250 (I2C/SPI)
-  - LiDAR Sensor 4-Wire (Obstacle avoidance via UART)
-  - Radiolink SE100 GPS (UART)
-  - Waveshare Core1262 LoRa Module (Telemetry via SPI)
-  - FlySky 6-Channel Receiver FS-iA6B (RC override)
+- **Power Source & Distribution:** A LiFePO4 battery supplies the main system voltage. The battery's positive terminal routes through an instant-cut emergency kill switch, ensuring the vessel can be mechanically powered down immediately if needed.
+- **Logic Power Step-down:** Post-kill-switch, the raw battery voltage feeds into a DC-DC buck converter. This converter drops the voltage down to a stable 5V, which is then routed back to power the microcontroller and the sensor suite described on page 1.
+- **Propulsion Drive:** Two SimonK 30A Brushless DC (BLDC) Electronic Speed Controllers (ESCs) draw power directly from the battery line. They receive PWM control signals from the STM32 and drive two underwater thrusters (CW and CCW) to provide the vessel's movement and differential steering.
 
-## 6. Reported Specifications
-
-### Communication Protocols
-- **I2C:** BME280, MPU-9250 (SDA/SCL)
-- **UART:** LiDAR (TX/RX), GPS (TX/RX)
-- **SPI:** Waveshare Core1262 LoRa (MISO, MOSI, SCK, NSS)
-- **Analog:** DO, TDS, pH sensors
-- **PWM:** FlySky Receiver, ESC control
-
-### Power Specifications
-- **Main Source:** LiFePO4 Battery
-- **Logic Power:** DC-DC Buck Converter (Steps battery voltage down to 5V)
-- **Safety:** Manual Kill Switch (Instant power cut)
-
-## 7. Bill of Materials (Power & Propulsion)
+## Bill of Materials (Power, Propulsion & Control)
 
 | Component | Description | Qty | Unit Cost (INR) | Source | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **ESC** | SimonK 30A BLDC Electronic Speed Controller | 2 | 700.00 | [Robu](https://robu.in/product/simonk-30a-bldc-esc-electronic-speed-controller-without-connectors/) | Direct install; no CAD needed. |
+| **ESC** | SimonK 30A BLDC Electronic Speed Controller | 2 | 700.00 | [Robu](https://robu.in/product/simonk-30a-bldc-esc-electronic-speed-controller-without-connectors/) | Direct install in electronics box. |
 | **Thruster** | Furbabies Boat Underwater Propeller (CW/CCW) | 2 | 8,000 | [Amazon](https://amzn.in/d/00W6ubMV) | Direct install; no CAD needed. |
+| **RC Transmitter/Receiver** | FlySky FS-i6 2.4G 6CH PPM RC Transmitter With FS-iA6B Receiver | 1 | 5,729 | Robu | Receiver goes in electronics box. |
 | **Battery** | LiFePO4 Battery | 1 | TBD | TBD | Main power source (BOM pending) |
 | **Kill Switch** | Instant Power Cut Emergency Switch | 1 | TBD | TBD | Safety disconnect (BOM pending) |
 | **Buck Converter** | DC-DC Converter | 1 | TBD | TBD | Steps down to 5V for logic (BOM pending) |
